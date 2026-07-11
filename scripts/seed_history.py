@@ -18,7 +18,7 @@ SAMPLE_SCANS = [
         "cve": cve,
         "severity": sev,
         "scanner": "trivy",
-        "date": f"2024-{(i%12)+1:02d}-15",
+        "date": f"2024-{(i % 12) + 1:02d}-15",
         "resolved": i % 3 == 0,
     }
     for i, (svc, cve, sev) in enumerate(

@@ -10,7 +10,26 @@ class Severity(str, Enum):
     informational = "INFORMATIONAL"
 
 
-class BasicIncidentReport(BaseModel):
+class MitreAttackTag(BaseModel):
+    technique_id: str  # eg: "T1190"
+    technique_name: str  # eg: "Exploit Public-Facing Application"
+    tactic: str  # eg: "Initial Access"
+    url: str  # eg: "https://attack.mitre.org/techniques/T1190"
+
+
+class ConfidenceBreakdown(BaseModel):
+    cve_data: float = Field(ge=0.0, le=1.0, description="Confidence in CVE findings")
+    graph_data: float = Field(
+        ge=0.0, le=1.0, description="Confidence in graph findings"
+    )
+    history_data: float = Field(
+        ge=0.0, le=1.0, description="Confidence in history findings"
+    )
+    overall: float = Field(ge=0.0, e=1.0, description="Weighted overall confidence")
+
+
+class IncidentReport(BaseModel):
+    # Identity
     alert_id: str
     service_id: str
     cve_id: str | None = None
@@ -34,5 +53,10 @@ class BasicIncidentReport(BaseModel):
     remediation: list[str] = Field(default_factory=list)
     summary: str = ""
 
+    confidence: ConfidenceBreakdown | None = None
+    mitre_attack_tags: list[MitreAttackTag] = Field(default_factory=list)
+    mean_time_to_investigate_seconds: float | None = None
+
     # Audit
     langsmith_trace_url: str | None = None
+    report_version: str = "2.0"
