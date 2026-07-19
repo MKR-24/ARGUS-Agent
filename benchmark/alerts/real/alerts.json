@@ -1,0 +1,92 @@
+[
+    {
+        "alert_id": "REAL-001",
+        "service_id": "user-svc",
+        "cve_id": "CVE-2021-44228",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "Trivy detected Log4Shell in user-svc. Apache Log4j2 JNDI RCE vulnerability.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-002",
+        "service_id": "payment-svc",
+        "cve_id": "CVE-2022-22965",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "Spring4Shell RCE detected in payment-svc Spring Framework component.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-003",
+        "service_id": "pg-main",
+        "cve_id": "CVE-2024-0985",
+        "scanner": "trivy",
+        "severity_raw": "HIGH",
+        "description": "PostgreSQL privilege escalation vulnerability in pg-main database.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-004",
+        "service_id": "order-svc",
+        "cve_id": "CVE-2023-44487",
+        "scanner": "grype",
+        "severity_raw": "HIGH",
+        "description": "HTTP/2 Rapid Reset attack vulnerability detected in order-svc.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-005",
+        "service_id": "api-gw",
+        "cve_id": "CVE-2023-38408",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "OpenSSH remote code execution vulnerability in api-gw.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-006",
+        "service_id": "notify-svc",
+        "cve_id": "CVE-2023-30589",
+        "scanner": "trivy",
+        "severity_raw": "MEDIUM",
+        "description": "Node.js HTTP request smuggling vulnerability in notify-svc.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-007",
+        "service_id": "report-svc",
+        "cve_id": "CVE-2024-21626",
+        "scanner": "trivy",
+        "severity_raw": "HIGH",
+        "description": "runc container escape vulnerability affecting report-svc container runtime.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-008",
+        "service_id": "inventory-svc",
+        "cve_id": "CVE-2023-46604",
+        "scanner": "grype",
+        "severity_raw": "CRITICAL",
+        "description": "Apache ActiveMQ RCE vulnerability detected in inventory-svc message broker.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-009",
+        "service_id": "auth-svc",
+        "cve_id": "CVE-2024-6387",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "regreSSHion OpenSSH unauthenticated RCE in auth-svc.",
+        "category": "real"
+    },
+    {
+        "alert_id": "REAL-010",
+        "service_id": "lb-01",
+        "cve_id": "CVE-2023-44487",
+        "scanner": "trivy",
+        "severity_raw": "HIGH",
+        "description": "HTTP/2 Rapid Reset DoS vulnerability in lb-01 nginx load balancer.",
+        "category": "real"
+    }
+]

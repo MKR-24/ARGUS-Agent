@@ -1,0 +1,102 @@
+[
+    {
+        "alert_id": "SYN-001",
+        "service_id": "user-svc",
+        "cve_id": "CVE-2099-99999",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "Fictional future vulnerability in user-svc.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-002",
+        "service_id": "nonexistent-svc",
+        "cve_id": "CVE-2099-11111",
+        "scanner": "trivy",
+        "severity_raw": "HIGH",
+        "description": "CVE in a service not present in the attack graph.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-003",
+        "service_id": "payment-svc",
+        "cve_id": null,
+        "scanner": "trivy",
+        "severity_raw": "MEDIUM",
+        "description": "Misconfiguration detected in payment-svc. No CVE assigned.",
+        "category": "synthetic",
+        "expected_behaviour": "no_cve_handling"
+    },
+    {
+        "alert_id": "SYN-004",
+        "service_id": "admin-svc",
+        "cve_id": "CVE-2099-22222",
+        "scanner": "grype",
+        "severity_raw": "HIGH",
+        "description": "Unknown vulnerability in admin-svc internal service.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-005",
+        "service_id": "kafka-01",
+        "cve_id": "CVE-2025-55555",
+        "scanner": "trivy",
+        "severity_raw": "CRITICAL",
+        "description": "Hypothetical Kafka zero-day vulnerability.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-006",
+        "service_id": "vault-01",
+        "cve_id": null,
+        "scanner": "checkov",
+        "severity_raw": "HIGH",
+        "description": "HashiCorp Vault misconfiguration: audit logging disabled.",
+        "category": "synthetic",
+        "expected_behaviour": "no_cve_handling"
+    },
+    {
+        "alert_id": "SYN-007",
+        "service_id": "redis-session",
+        "cve_id": "CVE-2099-12345",
+        "scanner": "trivy",
+        "severity_raw": "MEDIUM",
+        "description": "Future Redis vulnerability in session cache.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-008",
+        "service_id": "grafana",
+        "cve_id": "CVE-2024-33333",
+        "scanner": "trivy",
+        "severity_raw": "HIGH",
+        "description": "Fictional Grafana authentication bypass.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    },
+    {
+        "alert_id": "SYN-009",
+        "service_id": "s3-bucket",
+        "cve_id": null,
+        "scanner": "checkov",
+        "severity_raw": "HIGH",
+        "description": "S3 bucket public read access misconfiguration detected.",
+        "category": "synthetic",
+        "expected_behaviour": "no_cve_handling"
+    },
+    {
+        "alert_id": "SYN-010",
+        "service_id": "prometheus",
+        "cve_id": "CVE-2025-77777",
+        "scanner": "trivy",
+        "severity_raw": "MEDIUM",
+        "description": "Hypothetical Prometheus metrics endpoint exposure.",
+        "category": "synthetic",
+        "expected_behaviour": "graceful_failure"
+    }
+]
