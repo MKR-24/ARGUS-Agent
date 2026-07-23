@@ -1,5 +1,5 @@
 """
-Phase 3: Multi-agent LangGraph with supervisor routing,
+Multi-agent LangGraph with supervisor routing,
 specialist sub-agents, confidence scoring, MITRE tagging,
 and HITL interrupt for CRITICAL alerts.
 """
@@ -21,6 +21,7 @@ from .nodes.reachability_agent import reachability_agent_node
 from .nodes.aggregator import aggregator_node
 from .nodes.mitre_tagger import mitre_tagger_node
 from .nodes.hitl import hitl_node
+from .nodes.visual_intel_agent import visual_intel_agent_node
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -35,6 +36,7 @@ def build_graph() -> StateGraph:
     builder.add_node("cve_agent", cve_agent_node)
     builder.add_node("graph_agent", graph_agent_node)
     builder.add_node("history_agent", history_agent_node)
+    builder.add_node("visual_intel_agent", visual_intel_agent_node)
     builder.add_node("reachability_agent", reachability_agent_node)
     builder.add_node("aggregator", aggregator_node)
     builder.add_node("mitre_tagger", mitre_tagger_node)
@@ -63,6 +65,7 @@ async def run_investigation(
     cve_id: str | None,
     description: str,
     severity_raw: str,
+    evidence_images: list[str] | None = None,
 ) -> dict[str, Any]:
     """Run multi-agent investigation. Returns IncidentReport as dict."""
     start = time.monotonic()
@@ -78,6 +81,8 @@ async def run_investigation(
         "graph_findings": {},
         "history_findings": {},
         "reachability_findings": {},
+        "evidence_images": evidence_images or [],  # NEW
+        "visual_findings": {},
         "next_agent": "",
         "confidence_score": 0.0,
         "mitre_tags": [],

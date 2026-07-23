@@ -12,6 +12,18 @@ logger = logging.getLogger(__name__)
 
 async def graph_agent_node(state: AgentState) -> Command:
     """Calls Neo4j MCP server and writes graph findings to state."""
+
+    stream = state.get("stream")
+    if stream:
+        await stream.emit(
+            "agent_start",
+            {
+                "agent": "graph_agent",
+                "message": "Traversing Neo4j attack graph",
+                "icon": "🟢",
+            },
+        )
+
     service_id = state["service_id"]
 
     client = MultiServerMCPClient(
@@ -38,13 +50,22 @@ async def graph_agent_node(state: AgentState) -> Command:
         )
         paths = paths_info.get("paths", [])
         hop_count = min((p.get("hop_count") for p in paths), default=None)
-
+        path_info = paths_info.get("reachable_from_internet")
         logger.info(
             "Graph agent: service=%s reachable=%s hops=%s",
             service_id,
-            paths_info.get("reachable_from_internet"),
+            path_info,
             hop_count,
         )
+        if stream:
+            await stream.emit(
+                "agent_complete",
+                {
+                    "agent": "graph_agent",
+                    "message": f"Reachable ={path_info},  hops={hop_count}",
+                    "data": {"path": path_info, "hops": hop_count},
+                },
+            )
 
         return Command(
             update={
@@ -63,6 +84,14 @@ async def graph_agent_node(state: AgentState) -> Command:
 
     except Exception as e:
         logger.error("Graph agent failed: %s", e)
+        if stream:
+            await stream.emit(
+                "agent_error",
+                {
+                    "agent": "graph_agent",
+                    "message": f"Reachability from Internet failed: {e}",
+                },
+            )
         return Command(
             update={"graph_findings": {"success": False, "error": str(e)}},
             goto="history_agent",

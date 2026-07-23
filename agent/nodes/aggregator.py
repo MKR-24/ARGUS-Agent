@@ -93,8 +93,18 @@ def generate_remediation(
     return steps
 
 
-def aggregator_node(state: AgentState) -> Command:
+async def aggregator_node(state: AgentState) -> Command:
     """Combine all findings into a structured IncidentReport."""
+    stream = state.get("stream")
+    if stream:
+        await stream.emit(
+            "agent_start",
+            {
+                "agent": "aggregator_agent",
+                "message": "Computing confidence scores",
+                "icon": "🟢",
+            },
+        )
     cve = state.get("cve_findings", {})
     graph = state.get("graph_findings", {})
     history = state.get("history_findings", {})
@@ -120,7 +130,7 @@ def aggregator_node(state: AgentState) -> Command:
         (
             f"{severity.value}: {state.get('cve_id', 'Unknown CVE')} detected in "
             f"{state['service_id']}. "
-            f"CVSS {cvss or 'N/A'}, EPSS {epss:.2%} exploit probability. "
+            f"CVSS {cvss or 'N/A'}, EPSS {f'{epss:.2%}' if epss is not None else 'N/A'} exploit probability. "
             f"{'Reachable from internet' if reachable else 'Not directly internet-reachable'}. "
             f"Confidence: {confidence.overall:.0%}."
         )
@@ -151,7 +161,15 @@ def aggregator_node(state: AgentState) -> Command:
         severity.value,
         confidence.overall,
     )
-
+    if stream:
+        await stream.emit(
+            "agent_complete",
+            {
+                "agent": "aggregator_agent",
+                "message": f"Severity: {severity.value} ,Confidence={confidence.overall}",
+                "data": {"Severity": severity.value, "Confidence": confidence.overall},
+            },
+        )
     return Command(
         update={"final_report": report.model_dump()},
         goto="mitre_tagger",

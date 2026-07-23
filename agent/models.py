@@ -25,7 +25,7 @@ class ConfidenceBreakdown(BaseModel):
     history_data: float = Field(
         ge=0.0, le=1.0, description="Confidence in history findings"
     )
-    overall: float = Field(ge=0.0, e=1.0, description="Weighted overall confidence")
+    overall: float = Field(ge=0.0, le=1.0, description="Weighted overall confidence")
 
 
 class IncidentReport(BaseModel):

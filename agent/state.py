@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Any, Optional
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
 from typing_extensions import TypedDict
@@ -40,3 +40,6 @@ class AgentState(TypedDict):
     confidence_score: float
     mitre_tags: list[dict]
     final_report: dict
+    evidence_images: list[str]
+    visual_findings: Annotated[dict, merge_findings]
+    stream: Optional[Any]

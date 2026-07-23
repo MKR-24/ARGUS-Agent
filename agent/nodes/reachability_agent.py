@@ -1,7 +1,6 @@
 """
 Reachability specialist sub-agent.
-Phase 3: simple keyword check in service language metadata.
-Phase 4: replace with Semgrep call-graph analysis.
+
 """
 
 import logging
@@ -21,17 +20,37 @@ VULNERABLE_PACKAGES = {
 }
 
 
-def reachability_agent_node(state: AgentState) -> Command:
+async def reachability_agent_node(state: AgentState) -> Command:
     """
     Checks if the vulnerable package is plausibly used by the service
     based on its language metadata from the graph findings.
     """
+    stream = state.get("stream")
+    if stream:
+        await stream.emit(
+            "agent_start",
+            {
+                "agent": "reachability_agent",
+                "message": "Checking code path reachability",
+                "icon": "🟢",
+            },
+        )
+
     cve_id = state.get("cve_id")
     graph = state.get("graph_findings", {})
     service_info = graph.get("service_info", {})
     language = service_info.get("language", "").lower()
 
     if not cve_id or not language:
+        if stream:
+            await stream.emit(
+                "agent_complete",
+                {
+                    "agent": "reachability_agent",
+                    "message": "Insufficient data for reachability check — skipping",
+                },
+            )
+
         return Command(
             update={
                 "reachability_findings": {
@@ -55,14 +74,22 @@ def reachability_agent_node(state: AgentState) -> Command:
                 reachable = True
                 matched_package = package
                 break
-
+    service = state["service_id"]
     logger.info(
         "Reachability agent: service=%s language=%s reachable=%s",
-        state["service_id"],
+        service,
         language,
         reachable,
     )
-
+    if stream:
+        await stream.emit(
+            "agent_complete",
+            {
+                "agent": "reachability_agent",
+                "message": f"Service={service} in {language} language is reachable in status {reachable}",
+                "data": {"Service": service},
+            },
+        )
     return Command(
         update={
             "reachability_findings": {

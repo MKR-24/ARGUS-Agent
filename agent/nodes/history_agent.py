@@ -12,6 +12,16 @@ logger = logging.getLogger(__name__)
 
 async def history_agent_node(state: AgentState) -> Command:
     """Calls Qdrant MCP server and writes history findings to state."""
+    stream = state.get("stream")
+    if stream:
+        await stream.emit(
+            "agent_start",
+            {
+                "agent": "history_agent",
+                "message": "Searching Qdrant scan history",
+                "icon": "🟢",
+            },
+        )
     service_id = state["service_id"]
     cve_id = state.get("cve_id")
 
@@ -39,14 +49,26 @@ async def history_agent_node(state: AgentState) -> Command:
                 }
             )
         )
-
+        total_prior_findings = result.get("total_prior_findings", 0)
+        unresolved = result.get("unresolved", 0)
         logger.info(
             "History agent: %d prior findings (%d unresolved) for %s",
-            result.get("total_prior_findings", 0),
-            result.get("unresolved", 0),
+            total_prior_findings,
+            unresolved,
             service_id,
         )
-
+        if stream:
+            await stream.emit(
+                "agent_complete",
+                {
+                    "agent": "history_agent",
+                    "message": f"Total Prior findings ={total_prior_findings}, Unresolved={unresolved}",
+                    "data": {
+                        "Total Prior Findings": total_prior_findings,
+                        "Unresolved": unresolved,
+                    },
+                },
+            )
         return Command(
             update={
                 "history_findings": {
@@ -57,12 +79,20 @@ async def history_agent_node(state: AgentState) -> Command:
                     "success": True,
                 }
             },
-            goto="reachability_agent",
+            goto="visual_intel_agent",
         )
 
     except Exception as e:
         logger.error("History agent failed: %s", e)
+        if stream:
+            await stream.emit(
+                "agent_error",
+                {
+                    "agent": "history_agent",
+                    "message": f"History search failed: {e}",
+                },
+            )
         return Command(
             update={"history_findings": {"success": False, "error": str(e)}},
-            goto="reachability_agent",
+            goto="visual_intel_agent",
         )

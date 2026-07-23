@@ -59,11 +59,11 @@ def mock_tools():
 
 @pytest.mark.asyncio
 async def test_investigation_returns_report():
-    """Agent should return a valid BasicIncidentReport dict."""
+    """Agent should return a valid IncidentReport dict."""
     # We mock at the graph level for now — full integration test in Phase 5
-    from agent.models import BasicIncidentReport
+    from agent.models import IncidentReport
 
-    report = BasicIncidentReport(
+    report = IncidentReport(
         alert_id="ALERT-001",
         service_id="user-svc",
         cve_id="CVE-2021-44228",
