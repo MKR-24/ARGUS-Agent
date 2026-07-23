@@ -6,6 +6,7 @@ from langgraph.types import Command
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from ..state import AgentState
 from .utils import extract_tool_result
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def graph_agent_node(state: AgentState) -> Command:
     """Calls Neo4j MCP server and writes graph findings to state."""
 
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",

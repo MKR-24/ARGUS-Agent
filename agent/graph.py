@@ -10,7 +10,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
 from .nodes.supervisor import supervisor_node
@@ -48,12 +47,7 @@ def build_graph() -> StateGraph:
     # HITL leads to END
     builder.add_edge("hitl_interrupt", END)
 
-    # Compile with memory checkpointer (required for HITL)
-    checkpointer = MemorySaver()
-    return builder.compile(
-        checkpointer=checkpointer,
-        interrupt_before=["hitl_interrupt"],
-    )
+    return builder.compile()
 
 
 _graph = build_graph()
@@ -66,6 +60,7 @@ async def run_investigation(
     description: str,
     severity_raw: str,
     evidence_images: list[str] | None = None,
+    stream=None,
 ) -> dict[str, Any]:
     """Run multi-agent investigation. Returns IncidentReport as dict."""
     start = time.monotonic()
@@ -87,13 +82,11 @@ async def run_investigation(
         "confidence_score": 0.0,
         "mitre_tags": [],
         "final_report": {},
+        "stream": stream,
     }
 
-    # Each run needs a unique thread_id for the checkpointer
-    config = {"configurable": {"thread_id": alert_id}}
-
     try:
-        result = await _graph.ainvoke(initial_state, config=config)
+        result = await _graph.ainvoke(initial_state)
     except Exception as e:
         logger.error("Graph invocation failed for alert %s: %s", alert_id, e)
         raise

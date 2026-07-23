@@ -106,7 +106,7 @@ if st.button("🚀 Investigate Alert", type="primary", use_container_width=True)
     }
 
     # Start investigation and get stream URL
-    init_resp = requests.post(f"{API_URL}/alerts/stream", json=payload)
+    init_resp = requests.post(f"{API_URL}/alerts/investigate/stream", json=payload)
     init_resp.raise_for_status()
     alert_id = init_resp.json()["alert_id"]
     stream_url = f"{API_URL}/alerts/{alert_id}/events"
@@ -134,6 +134,12 @@ if st.button("🚀 Investigate Alert", type="primary", use_container_width=True)
                     )
                 elif event_type == "agent_complete":
                     trace_lines.append(f"   ✅ {data['message']}")
+                elif event_type == "hitl_pending":
+                    st.warning(
+                        f"⚠️ CRITICAL alert requires human approval. "
+                        f"Resume via API: POST /alerts/{data['alert_id']}/resume"
+                    )
+                    st.stop()
                 elif event_type == "complete":
                     report = data["report"]
                     elapsed = report.get("mean_time_to_investigate_seconds", 0)

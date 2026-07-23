@@ -6,6 +6,7 @@ Reachability specialist sub-agent.
 import logging
 from langgraph.types import Command
 from ..state import AgentState
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ async def reachability_agent_node(state: AgentState) -> Command:
     Checks if the vulnerable package is plausibly used by the service
     based on its language metadata from the graph findings.
     """
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",

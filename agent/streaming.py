@@ -21,7 +21,7 @@ class InvestigationStream:
 
     async def done(self):
         self._done = True
-        await self._queue.ut(None)
+        await self._queue.put(None)
 
     async def events(self) -> AsyncGenerator[str, None]:
         while True:

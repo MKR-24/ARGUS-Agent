@@ -56,6 +56,7 @@ class IncidentReport(BaseModel):
     confidence: ConfidenceBreakdown | None = None
     mitre_attack_tags: list[MitreAttackTag] = Field(default_factory=list)
     mean_time_to_investigate_seconds: float | None = None
+    visual_findings: dict | None = None
 
     # Audit
     langsmith_trace_url: str | None = None

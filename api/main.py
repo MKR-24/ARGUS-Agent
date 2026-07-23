@@ -93,6 +93,7 @@ async def investigate_alert(alert: AlertRequest, request: Request):
     Returns a structured incident report.
     """
     start = time.monotonic()
+
     logger.info("Received alert %s for service %s", alert.alert_id, alert.service_id)
 
     try:
@@ -102,6 +103,7 @@ async def investigate_alert(alert: AlertRequest, request: Request):
             cve_id=alert.cve_id,
             description=alert.description,
             severity_raw=alert.severity_raw,
+            evidence_images=alert.evidence_images,
         )
     except Exception as e:
         logger.error(
@@ -119,7 +121,7 @@ async def investigate_alert(alert: AlertRequest, request: Request):
     }
 
 
-@app.post("/alerts/stream")
+@app.post("/alerts/investigate/stream")
 async def investigate_alert_stream(alert: AlertRequest):
     """
     Submit alert and receive SSE stream of agent progress.
@@ -153,6 +155,7 @@ async def alert_events(alert_id: str):
 
 
 async def _run_with_stream(alert: AlertRequest, stream):
+    start = time.monotonic()
     try:
         report = await run_investigation(
             alert_id=alert.alert_id,
@@ -163,8 +166,23 @@ async def _run_with_stream(alert: AlertRequest, stream):
             evidence_images=alert.evidence_images,
             stream=stream,
         )
-        await stream.emit("complete", {"report": report})
+        elapsed = round(time.monotonic() - start, 2)
+
+        if not report or not report.get("severity"):
+            # Graph paused at HITL interrupt
+            await stream.emit(
+                "hitl_pending",
+                {
+                    "alert_id": alert.alert_id,
+                    "message": "CRITICAL alert paused — awaiting human approval",
+                },
+            )
+        else:
+            report["mean_time_to_investigate_seconds"] = elapsed
+            await stream.emit("complete", {"report": report})
+
     except Exception as e:
+        logger.error("Stream investigation failed: %s", traceback.format_exc())
         await stream.emit("error", {"message": str(e)})
     finally:
         await stream.done()

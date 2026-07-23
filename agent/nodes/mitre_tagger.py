@@ -4,13 +4,14 @@ import logging
 from langgraph.types import Command
 from ..state import AgentState
 from ..mitre.mapper import map_to_mitre
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
 
 async def mitre_tagger_node(state: AgentState) -> Command:
     """Map investigation findings to MITRE ATT&CK techniques."""
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",
@@ -31,8 +32,8 @@ async def mitre_tagger_node(state: AgentState) -> Command:
 
     # Check if HITL interrupt needed
     report = state.get("final_report", {})
-    severity = report.get("severity", "INFORMATIONAL")
-    next_node = "hitl_interrupt" if severity == "CRITICAL" else "__end__"
+    # next_node = "hitl_interrupt" if severity == "CRITICAL" else "__end__"
+    next_node = "__end__"
 
     # Update report with MITRE tags
     report["mitre_attack_tags"] = techniques

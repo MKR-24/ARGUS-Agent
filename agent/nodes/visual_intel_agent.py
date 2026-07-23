@@ -10,13 +10,14 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 
 from ..state import AgentState
 from .utils import extract_tool_result
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
 
 async def visual_intel_agent_node(state: AgentState) -> Command:
     """Analyse visual evidence if present in the alert."""
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",
@@ -27,7 +28,7 @@ async def visual_intel_agent_node(state: AgentState) -> Command:
             },
         )
     images = state.get("evidence_images", [])
-
+    logger.info("Visual intel agent: received %d images", len(images))
     if not images:
         if stream:
             await stream.emit(

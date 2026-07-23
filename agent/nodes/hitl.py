@@ -8,15 +8,26 @@ as a pending state in the API response.
 import logging
 from langgraph.types import interrupt, Command
 from ..state import AgentState
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
 
-def hitl_node(state: AgentState) -> Command:
+async def hitl_node(state: AgentState) -> Command:
     """
     Interrupt execution for CRITICAL alerts.
     The graph pauses until a human resumes it via the API.
     """
+    stream = get_stream(state["alert_id"])
+    if stream:
+        await stream.emit(
+            "hitl_interrupt",
+            {
+                "agent": "hitl",
+                "message": "CRITICAL alert — awaiting human approval",
+                "icon": "⚠️",
+            },
+        )
     report = state.get("final_report", {})
     logger.warning(
         "HITL interrupt: CRITICAL alert %s requires human review before finalising",

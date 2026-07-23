@@ -6,13 +6,14 @@ from langgraph.types import Command
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from ..state import AgentState
 from .utils import extract_tool_result
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
 
 async def cve_agent_node(state: AgentState) -> Command:
     """Calls NVD MCP server and writes findings to state."""
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",
@@ -76,7 +77,7 @@ async def cve_agent_node(state: AgentState) -> Command:
                     "epss_score": result.get("epss_score"),
                     "description": result.get("description"),
                     "published": result.get("published"),
-                    "success": True,
+                    "success": cvss is not None,
                 }
             },
             goto="graph_agent",

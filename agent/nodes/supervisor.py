@@ -5,6 +5,7 @@ Supervisor node — decides which sub-agents to run based on alert content.
 import logging
 from langgraph.types import Command
 from ..state import AgentState
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ async def supervisor_node(state: AgentState) -> Command:
     Entry point. Routes to the first sub-agent.
     Each sub-agent routes to the next via Command.
     """
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",
@@ -33,7 +34,7 @@ async def supervisor_node(state: AgentState) -> Command:
             "agent_complete",
             {
                 "agent": "supervisor_agent",
-                "message": "Dispatching to CVE agent",
+                "message": "Dispatching to {SUB_AGENT_SEQUENCE[0]}",
             },
         )
     return Command(goto=SUB_AGENT_SEQUENCE[0])

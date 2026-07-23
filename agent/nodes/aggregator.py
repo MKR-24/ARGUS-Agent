@@ -7,6 +7,7 @@ import logging
 from langgraph.types import Command
 from ..state import AgentState
 from ..models import IncidentReport, Severity, ConfidenceBreakdown
+from agent.streaming import get_stream
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ def generate_remediation(
 
 async def aggregator_node(state: AgentState) -> Command:
     """Combine all findings into a structured IncidentReport."""
-    stream = state.get("stream")
+    stream = get_stream(state["alert_id"])
     if stream:
         await stream.emit(
             "agent_start",
@@ -137,7 +138,7 @@ async def aggregator_node(state: AgentState) -> Command:
         if cvss
         else f"Alert investigated. Insufficient CVE data. Confidence: {confidence.overall:.0%}."
     )
-
+    visual = state.get("visual_findings", {})
     report = IncidentReport(
         alert_id=state["alert_id"],
         service_id=state["service_id"],
@@ -155,6 +156,10 @@ async def aggregator_node(state: AgentState) -> Command:
         summary=summary,
         confidence=confidence,
     )
+    report_dict = report.model_dump()
+    report_dict["visual_findings"] = (
+        visual if visual and not visual.get("skipped") else None
+    )
 
     logger.info(
         "Aggregator: severity=%s confidence=%.2f",
@@ -171,6 +176,6 @@ async def aggregator_node(state: AgentState) -> Command:
             },
         )
     return Command(
-        update={"final_report": report.model_dump()},
+        update={"final_report": report_dict},
         goto="mitre_tagger",
     )

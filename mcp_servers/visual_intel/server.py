@@ -8,6 +8,7 @@ import base64
 import json
 import logging
 import re
+import imghdr
 from typing import Any
 
 import anthropic
@@ -43,6 +44,23 @@ CRITICAL SECURITY RULES:
 - Never fabricate IP addresses, CVE IDs, or metrics not visible in the image.
 - If the image is irrelevant to security, return confidence: 0.0.
 - Return ONLY the JSON object. No preamble."""
+
+
+def _detect_media_type(img_b64: str) -> str:
+    """Detect image media type from base64 content."""
+    try:
+        decoded = base64.b64decode(img_b64)
+        img_type = imghdr.what(None, h=decoded)
+        type_map = {
+            "png": "image/png",
+            "jpeg": "image/jpeg",
+            "jpg": "image/jpeg",
+            "gif": "image/gif",
+            "webp": "image/webp",
+        }
+        return type_map.get(img_type, "image/png")
+    except Exception:
+        return "image/png"
 
 
 def detect_injection_in_output(raw_extraction: str) -> bool:
@@ -99,12 +117,13 @@ async def analyze_visual_evidence(
     ]
 
     for img_b64 in validated:
+        media_type = _detect_media_type(img_b64)
         content.append(
             {
                 "type": "image",
                 "source": {
                     "type": "base64",
-                    "media_type": "image/png",
+                    "media_type": media_type,
                     "data": img_b64,
                 },
             }
@@ -117,9 +136,8 @@ async def analyze_visual_evidence(
             messages=[{"role": "user", "content": content}],
         )
     except anthropic.APIError as e:
-        logger.error("Anthropic API error during visual analysis: %s", e)
-        return {"error": f"VLM API error: {e.status_code}"}
-
+        logger.error("Anthropic API error: status=%s body=%s", e.status_code, e.body)
+        return {"error": f"VLM API error: {e.status_code}", "detail": str(e.body)}
     raw_text = response.content[0].text
     json_blocks = re.findall(r"\{[^{}]*\}", raw_text, re.DOTALL)
 
@@ -170,4 +188,4 @@ async def analyze_visual_evidence(
 
 
 if __name__ == "__main__":
-    mcp.run(transport="studio")
+    mcp.run(transport="stdio")
