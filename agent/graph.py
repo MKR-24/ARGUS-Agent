@@ -10,7 +10,7 @@ from typing import Any
 
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
-
+from langsmith import get_current_run_tree, traceable
 from .state import AgentState
 from .nodes.supervisor import supervisor_node
 from .nodes.cve_agent import cve_agent_node
@@ -53,6 +53,7 @@ def build_graph() -> StateGraph:
 _graph = build_graph()
 
 
+@traceable(name="argus-investigation", project_name="argus-agent")
 async def run_investigation(
     alert_id: str,
     service_id: str,
@@ -82,7 +83,6 @@ async def run_investigation(
         "confidence_score": 0.0,
         "mitre_tags": [],
         "final_report": {},
-        "stream": stream,
     }
 
     try:
@@ -94,6 +94,10 @@ async def run_investigation(
     elapsed = round(time.monotonic() - start, 2)
     report = result.get("final_report", {})
     report["mean_time_to_investigate_seconds"] = elapsed
+    # Get LangSmith trace URL if available
+    run = get_current_run_tree()
+    if run:
+        report["langsmith_trace_url"] = "https://smith.langchain.com"
 
     logger.info(
         "Investigation complete: alert=%s severity=%s confidence=%.2f time=%.2fs",
