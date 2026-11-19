@@ -8,7 +8,6 @@ import base64
 import json
 import logging
 import re
-import imghdr
 from typing import Any
 
 import anthropic
@@ -48,17 +47,19 @@ CRITICAL SECURITY RULES:
 
 def _detect_media_type(img_b64: str) -> str:
     """Detect image media type from base64 content."""
+    # Same signature checks imghdr used for these four formats. imghdr was
+    # removed in Python 3.13 (PEP 594).
     try:
         decoded = base64.b64decode(img_b64)
-        img_type = imghdr.what(None, h=decoded)
-        type_map = {
-            "png": "image/png",
-            "jpeg": "image/jpeg",
-            "jpg": "image/jpeg",
-            "gif": "image/gif",
-            "webp": "image/webp",
-        }
-        return type_map.get(img_type, "image/png")
+        if decoded[6:10] in (b"JFIF", b"Exif") or decoded[:4] == b"\xff\xd8\xff\xdb":
+            return "image/jpeg"
+        if decoded.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if decoded[:6] in (b"GIF87a", b"GIF89a"):
+            return "image/gif"
+        if decoded.startswith(b"RIFF") and decoded[8:12] == b"WEBP":
+            return "image/webp"
+        return "image/png"
     except Exception:
         return "image/png"
 
